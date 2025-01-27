@@ -1,4 +1,5 @@
 #include "display/base_window.hpp"
+#include "display/RenderData.hpp"
 
 class GameWindow : public BaseWindow 
 {
@@ -11,6 +12,11 @@ public:
     void Render();
     void Unload();
     void ShowRenderSettings();
+
+    RenderData* TriangleData;
+    RenderData* RectangleData;
+    RenderData* CurrentRenderData;
+
 private:
     float TriangleVertices[9] = 
     {
@@ -18,6 +24,14 @@ private:
         0.5f, -0.5f, 0.0f,
         0.0f, -0.5f, 0.0f,
     };
+
+    unsigned int VAO2;
+    unsigned int VBO2;
+    unsigned int EBO2;
+
     void LoadContent2();
     void Render2();
+
+    void ShowTriangle();
+    void ShowRectangle();
 };

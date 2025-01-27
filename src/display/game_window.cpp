@@ -1,6 +1,8 @@
 #include "display/game_window.hpp"
 #include "shaders/shader.hpp"
 #include <iostream>
+#include "display/RenderTriangle.hpp"
+#include "display/RenderRectangle.hpp"
 
 // Template stuff
 Shader s;
@@ -10,6 +12,10 @@ unsigned int EBO;
 
 GameWindow::GameWindow(int width, int height, std::string title) : BaseWindow(width, height, title)
 {
+    this->TriangleData = new RenderTriangle("Triangle");
+    this->RectangleData = new RenderRectangle("Rectangle");
+
+    this->CurrentRenderData = RectangleData;
 }
 
 // Called whenever the window or framebuffer's size is changed
@@ -90,11 +96,12 @@ void GameWindow::Update() {
 
 void GameWindow::Render() {
     // Bind the VAO
-    glBindVertexArray(VAO);
+    glBindVertexArray(VAO2);
 
     // Make sure we're using the correct shader program.
     // Must be done per-frame, since the shader program id might change when hot-reloading
-    glUseProgram(s.programID);
+    //glUseProgram(s.programID);
+    glUseProgram(this->CurrentRenderData->Shader.programID);
 
     // Create new imgui frames
     ImGui_ImplOpenGL3_NewFrame();
@@ -107,11 +114,12 @@ void GameWindow::Render() {
 
     // Draw the square
     //glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
-    glDrawArrays(GL_TRIANGLES, 0, 3);
+    //glDrawArrays(GL_TRIANGLES, 0, 3);
+    this->CurrentRenderData->Draw();
 
     // Draw imgui
     //ImGui::ShowDemoWindow();
-    //ShowRenderSettings();
+    ShowRenderSettings();
 
     ImGui::Render();
     ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
@@ -123,9 +131,9 @@ void GameWindow::Render() {
 
 void GameWindow::Unload() {
 
-    glDeleteVertexArrays(1, &VAO);
-    glDeleteBuffers(1, &VBO);
-    glDeleteProgram(s.programID);
+    glDeleteVertexArrays(1, &VAO2);
+    glDeleteBuffers(1, &VBO2);
+    glDeleteProgram(this->CurrentRenderData->Shader.programID);
 
     // Destroy imgui
     ImGui_ImplOpenGL3_Shutdown();
@@ -142,31 +150,20 @@ void GameWindow::ShowRenderSettings()
         return;
     }
     
-    if(ImGui::TreeNode("Draw Triangle"))
+    if(ImGui::TreeNode("Render"))
     {
-
         static int clicked = 0;
-
         static int value = 0;        
 
-        //printf("value %d\n", value);
-
-     
-        static float vec3[3];
-        ImGui::InputFloat3("Vertex ", vec3);
-        ImGui::SameLine(); 
-
-
-        if(ImGui::Button("Button"))
+        if(ImGui::Button("Triangle"))
         {
-            []() mutable
-            {
-                value++;
-                ImGui::Text("Button Click %d\n", value);
-                vec3[0] += 0.01f;
-            }();
+            ShowTriangle();
         }
 
+        if(ImGui::Button("Rectangle"))
+        {
+            ShowRectangle();
+        }
 
         ImGui::TreePop();
     }
@@ -191,31 +188,45 @@ void GameWindow::LoadContent2()
     // Load the template shader
     s = Shader::LoadShader("../resources/shaders/testing.vs", "../resources/shaders/testing.fs");
     //s = Shader::LoadShader("testing.vs", "testing.fs");
-
+    CurrentRenderData->LoadShader("../resources/shaders/testing.vs", "../resources/shaders/testing.fs");
+    
 
     float vertices[] = {
        -0.5f, -0.5f, 0.0f, // left  
         0.5f, -0.5f, 0.0f, // right 
         0.0f,  0.5f, 0.0f  // top   
     };
+    CurrentRenderData->ConfigData(VAO2, VBO2, EBO2);
 
-    glGenVertexArrays(1, &VAO);
-    glBindVertexArray(VAO); // And bind it
+    //glGenVertexArrays(1, &VAO);
+    //glBindVertexArray(VAO); // And bind it
 
     // Create Vertex Buffer object
-    glGenBuffers(1, &VBO);
+    //glGenBuffers(1, &VBO);
     // And bind it (this also includes it into the VAO)
-    glBindBuffer(GL_ARRAY_BUFFER, VBO);
+    //glBindBuffer(GL_ARRAY_BUFFER, VBO);
     // Fill the VBO with vertex data, simply positions
-    glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
+    //glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
 
     // layout = 0 should contain these positions
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
-    glEnableVertexAttribArray(0); // Enable that shit
+    //glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
+    //glEnableVertexAttribArray(0); // Enable that shit
 
 }
 
 void GameWindow::Render2()
 {
 
+}
+
+void GameWindow::ShowTriangle()
+{
+    this->CurrentRenderData = TriangleData;
+    this->CurrentRenderData->ConfigData(VAO2, VBO2, EBO2);
+}
+
+void GameWindow::ShowRectangle()
+{
+    this->CurrentRenderData = RectangleData;
+    this->CurrentRenderData->ConfigData(VAO2, VBO2, EBO2);
 }
