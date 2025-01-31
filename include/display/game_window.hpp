@@ -16,6 +16,7 @@ public:
     RenderData* TriangleData;
     RenderData* RectangleData;
     RenderData* TextureData;
+    RenderData* MixedTextureData;
 
     RenderData* CurrentRenderData;
 
@@ -37,4 +38,5 @@ private:
     void ShowTriangle();
     void ShowRectangle();
     void ShowTexture();
+    void ShowMixedTexture();
 };

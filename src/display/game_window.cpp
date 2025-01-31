@@ -4,6 +4,7 @@
 #include "display/RenderTriangle.hpp"
 #include "display/RenderRectangle.hpp"
 #include "display/RenderRectangleUseTexture.hpp"
+#include "display/RenderRectangleUseMixedTexture.hpp"
 
 // Template stuff
 Shader s;
@@ -16,6 +17,7 @@ GameWindow::GameWindow(int width, int height, std::string title) : BaseWindow(wi
     this->TriangleData = new RenderTriangle("Triangle");
     this->RectangleData = new RenderRectangle("Rectangle");
     this->TextureData = new RenderRectangleUseTexture("Texture");
+    this->MixedTextureData = new RenderRectangleUseMixedTexture("MixedTexture");
 
     this->CurrentRenderData = RectangleData;
 }
@@ -172,6 +174,11 @@ void GameWindow::ShowRenderSettings()
             ShowTexture();
         }
 
+        if(ImGui::Button("Mixed Texture"))
+        {
+            ShowMixedTexture();
+        }
+
         ImGui::TreePop();
     }
 
@@ -244,5 +251,16 @@ void GameWindow::ShowTexture()
 {
     this->CurrentRenderData = TextureData;
     this->CurrentRenderData->LoadShader("../resources/shaders/use_texture.vs", "../resources/shaders/use_texture.fs");
+    this->CurrentRenderData->ConfigData(VAO2, VBO2, EBO2);
+}
+
+void GameWindow::ShowMixedTexture()
+{
+    // or set it via the texture class
+    this->CurrentRenderData = MixedTextureData;
+    this->CurrentRenderData->LoadShader("../resources/shaders/use_texture_mixed.vs", "../resources/shaders/use_texture_mixed.fs");
+    glUseProgram(this->CurrentRenderData->Shader.programID);
+    glUniform1i(glGetUniformLocation(this->CurrentRenderData->Shader.programID, "ourTexture"), 0);
+    glUniform1i(glGetUniformLocation(this->CurrentRenderData->Shader.programID, "ourTexture2"), 1);
     this->CurrentRenderData->ConfigData(VAO2, VBO2, EBO2);
 }
