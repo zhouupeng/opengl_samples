@@ -3,6 +3,7 @@
 #include <iostream>
 #include "display/RenderTriangle.hpp"
 #include "display/RenderRectangle.hpp"
+#include "display/RenderRectangleUseTexture.hpp"
 
 // Template stuff
 Shader s;
@@ -14,6 +15,7 @@ GameWindow::GameWindow(int width, int height, std::string title) : BaseWindow(wi
 {
     this->TriangleData = new RenderTriangle("Triangle");
     this->RectangleData = new RenderRectangle("Rectangle");
+    this->TextureData = new RenderRectangleUseTexture("Texture");
 
     this->CurrentRenderData = RectangleData;
 }
@@ -165,6 +167,11 @@ void GameWindow::ShowRenderSettings()
             ShowRectangle();
         }
 
+        if(ImGui::Button("Texture"))
+        {
+            ShowTexture();
+        }
+
         ImGui::TreePop();
     }
 
@@ -222,11 +229,20 @@ void GameWindow::Render2()
 void GameWindow::ShowTriangle()
 {
     this->CurrentRenderData = TriangleData;
+    this->CurrentRenderData->LoadShader("../resources/shaders/testing.vs", "../resources/shaders/testing.fs");
     this->CurrentRenderData->ConfigData(VAO2, VBO2, EBO2);
 }
 
 void GameWindow::ShowRectangle()
 {
     this->CurrentRenderData = RectangleData;
+    this->CurrentRenderData->LoadShader("../resources/shaders/testing.vs", "../resources/shaders/testing.fs");
+    this->CurrentRenderData->ConfigData(VAO2, VBO2, EBO2);
+}
+
+void GameWindow::ShowTexture()
+{
+    this->CurrentRenderData = TextureData;
+    this->CurrentRenderData->LoadShader("../resources/shaders/use_texture.vs", "../resources/shaders/use_texture.fs");
     this->CurrentRenderData->ConfigData(VAO2, VBO2, EBO2);
 }

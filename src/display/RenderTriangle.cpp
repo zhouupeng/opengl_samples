@@ -37,4 +37,5 @@ RenderTriangle::RenderTriangle(std::string Name) : RenderData()
         0.0f, 0.5f, 0.0f,
     };
     this->Name = Name;
+    
 }
