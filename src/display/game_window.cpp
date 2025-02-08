@@ -5,6 +5,10 @@
 #include "display/RenderRectangle.hpp"
 #include "display/RenderRectangleUseTexture.hpp"
 #include "display/RenderRectangleUseMixedTexture.hpp"
+#include "display/RenderCube.hpp"
+#include <glm.hpp>
+#include <gtc/matrix_transform.hpp>
+#include <gtc/type_ptr.hpp>
 
 // Template stuff
 Shader s;
@@ -18,6 +22,7 @@ GameWindow::GameWindow(int width, int height, std::string title) : BaseWindow(wi
     this->RectangleData = new RenderRectangle("Rectangle");
     this->TextureData = new RenderRectangleUseTexture("Texture");
     this->MixedTextureData = new RenderRectangleUseMixedTexture("MixedTexture");
+    this->CubeData = new RenderCube("Cube");
 
     this->CurrentRenderData = RectangleData;
 }
@@ -25,6 +30,38 @@ GameWindow::GameWindow(int width, int height, std::string title) : BaseWindow(wi
 // Called whenever the window or framebuffer's size is changed
 void FramebufferSizeCallback(GLFWwindow* window, int width, int height) {
     glViewport(0, 0, width, height);
+}
+
+glm::vec3 cameraPos = glm::vec3(0.0f, 0.0f, 3.0f);
+glm::vec3 cameraFront = glm::vec3(0.0f, 0.0f, -1.0f);
+glm::vec3 cameraUp = glm::vec3(0.0f, 1.0f, 0.0f);
+
+float DeltaTime = 0.0f;
+float LastFrame = 0.0f;
+
+void ProcessInput(GLFWwindow* window) {
+    if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS) {
+        glfwSetWindowShouldClose(window, true);
+    }
+
+    float CameraSpeed = static_cast<float>(2.5f * DeltaTime);
+    
+    if(glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
+    {
+        cameraPos += CameraSpeed * cameraFront;
+    }
+    if(glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
+    {
+        cameraPos -= CameraSpeed * cameraFront;
+    }
+    if(glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
+    {
+        cameraPos -= glm::normalize(glm::cross(cameraFront, cameraUp)) * CameraSpeed;
+    }
+    if(glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
+    {
+        cameraPos += glm::normalize(glm::cross(cameraFront, cameraUp)) * CameraSpeed;
+    }
 }
 
 // 1. The first thing that is run when starting the window
@@ -107,6 +144,7 @@ void GameWindow::Render() {
     //glUseProgram(s.programID);
     glUseProgram(this->CurrentRenderData->Shader.programID);
 
+    ProcessInput(this->windowHandle);
     // Create new imgui frames
     ImGui_ImplOpenGL3_NewFrame();
     ImGui_ImplGlfw_NewFrame();
@@ -114,7 +152,7 @@ void GameWindow::Render() {
 
     // Clear the window
     glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
-    glClear(GL_COLOR_BUFFER_BIT);
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
     // Draw the square
     //glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
@@ -179,6 +217,10 @@ void GameWindow::ShowRenderSettings()
             ShowMixedTexture();
         }
 
+        if(ImGui::Button("Cube"))
+        {
+            ShowCube();
+        }
         ImGui::TreePop();
     }
 
@@ -263,4 +305,15 @@ void GameWindow::ShowMixedTexture()
     glUniform1i(glGetUniformLocation(this->CurrentRenderData->Shader.programID, "ourTexture"), 0);
     glUniform1i(glGetUniformLocation(this->CurrentRenderData->Shader.programID, "ourTexture2"), 1);
     this->CurrentRenderData->ConfigData(VAO2, VBO2, EBO2);
+}
+
+void GameWindow::ShowCube()
+{
+    this->CurrentRenderData = CubeData;
+    this->CurrentRenderData->LoadShader("../resources/shaders/render_cube.vs", "../resources/shaders/render_cube.fs");
+    glUseProgram(this->CurrentRenderData->Shader.programID);
+    glUniform1i(glGetUniformLocation(this->CurrentRenderData->Shader.programID, "texture1"), 0);
+    glUniform1i(glGetUniformLocation(this->CurrentRenderData->Shader.programID, "texture2"), 1);
+    this->CurrentRenderData->ConfigData(VAO2, VBO2, EBO2);
+    glEnable(GL_DEPTH_TEST);
 }
