@@ -6,9 +6,6 @@
 #include "display/RenderRectangleUseTexture.hpp"
 #include "display/RenderRectangleUseMixedTexture.hpp"
 #include "display/RenderCube.hpp"
-#include <glm.hpp>
-#include <gtc/matrix_transform.hpp>
-#include <gtc/type_ptr.hpp>
 
 // Template stuff
 Shader s;
@@ -22,7 +19,7 @@ GameWindow::GameWindow(int width, int height, std::string title) : BaseWindow(wi
     this->RectangleData = new RenderRectangle("Rectangle");
     this->TextureData = new RenderRectangleUseTexture("Texture");
     this->MixedTextureData = new RenderRectangleUseMixedTexture("MixedTexture");
-    this->CubeData = new RenderCube("Cube");
+    this->CubeData = new RenderCube("Cube", this);
 
     this->CurrentRenderData = RectangleData;
 }
@@ -32,19 +29,19 @@ void FramebufferSizeCallback(GLFWwindow* window, int width, int height) {
     glViewport(0, 0, width, height);
 }
 
-glm::vec3 cameraPos = glm::vec3(0.0f, 0.0f, 3.0f);
-glm::vec3 cameraFront = glm::vec3(0.0f, 0.0f, -1.0f);
-glm::vec3 cameraUp = glm::vec3(0.0f, 1.0f, 0.0f);
+//glm::vec3 cameraPos = glm::vec3(0.0f, 0.0f, 3.0f);
+//glm::vec3 cameraFront = glm::vec3(0.0f, 0.0f, -1.0f);
+//glm::vec3 cameraUp = glm::vec3(0.0f, 1.0f, 0.0f);
 
-float DeltaTime = 0.0f;
-float LastFrame = 0.0f;
+//float DeltaTime = 0.0f;
+//float LastFrame = 0.0f;
 
-void ProcessInput(GLFWwindow* window) {
+void GameWindow::ProcessInput(GLFWwindow* window) {
     if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS) {
         glfwSetWindowShouldClose(window, true);
     }
 
-    float CameraSpeed = static_cast<float>(2.5f * DeltaTime);
+    float CameraSpeed = static_cast<float>(0.67f);
     
     if(glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
     {
@@ -62,6 +59,12 @@ void ProcessInput(GLFWwindow* window) {
     {
         cameraPos += glm::normalize(glm::cross(cameraFront, cameraUp)) * CameraSpeed;
     }
+}
+
+glm::mat4 GameWindow::GetViewMatrix()
+{
+    glm::mat4 view = glm::lookAt(cameraPos, cameraPos + cameraFront, cameraUp);
+    return view;
 }
 
 // 1. The first thing that is run when starting the window

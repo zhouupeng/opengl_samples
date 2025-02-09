@@ -4,8 +4,9 @@
 #include <gtc/type_ptr.hpp>
 #include <stb_image.h>
 
-RenderCube::RenderCube(std::string Name) : RenderData()
+RenderCube::RenderCube(std::string Name, GameWindow* Window) : RenderData()
 {
+    this->Window = Window;
     this->Vertices = 
     {
         -0.5f, -0.5f, -0.5f,  0.0f, 0.0f,
@@ -141,7 +142,8 @@ void RenderCube::Draw()
     glm::mat4 projection    = glm::mat4(1.0f);
 
     model = glm::rotate(model, (float)glfwGetTime(), glm::vec3(0.5f, 1.0f, 0.0f));
-    view  = glm::translate(view, glm::vec3(0.0f, 0.0f, -3.0f));
+    //view  = glm::translate(view, glm::vec3(0.0f, 0.0f, -3.0f));
+    view = Window->GetViewMatrix();
     projection = glm::perspective(glm::radians(45.0f), (float)1600/ (float)1000, 0.1f, 100.0f);
 
     // retrieve the matrix uniform locations
