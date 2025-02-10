@@ -24,11 +24,11 @@ GameWindow::GameWindow(int width, int height, std::string title) : BaseWindow(wi
     this->CurrentRenderData = RectangleData;
 }
 
+
 // Called whenever the window or framebuffer's size is changed
 void FramebufferSizeCallback(GLFWwindow* window, int width, int height) {
     glViewport(0, 0, width, height);
 }
-
 //glm::vec3 cameraPos = glm::vec3(0.0f, 0.0f, 3.0f);
 //glm::vec3 cameraFront = glm::vec3(0.0f, 0.0f, -1.0f);
 //glm::vec3 cameraUp = glm::vec3(0.0f, 1.0f, 0.0f);
